@@ -171,7 +171,7 @@ class BPETokenizer:
         # 위에 잇는걸 이제 merge rule 써서 합쳐 
         for merge_id in range(len(self.merges)):
             i = 0
-            while(i < len((ids))):
+            while(i < len(ids) - 1):
                 if self.merges[merge_id] == (ids[i], ids[i+1]):
                     ids[i] = merge_id + 260
                     del ids[i + 1]
