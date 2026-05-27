@@ -76,6 +76,18 @@ class BPETokenizer:
         """문장 끝 토큰 ID."""
         return SPECIAL_IDS[EOS_TOKEN]
 
+    def _apply_merge(self, token_ids: list[int], merge_rule: tuple[int, int], merge_id: int) -> list[int]:
+        merged = []
+        i = 0
+        while i < len(token_ids):
+            if i < len(token_ids) - 1 and (token_ids[i], token_ids[i + 1]) == merge_rule:
+                merged.append(merge_id)
+                i += 2
+            else:
+                merged.append(token_ids[i])
+                i += 1
+        return merged
+
     def train(self, corpus: str):
         """
         TODO: 코퍼스에서 BPE merge rule과 vocabulary를 학습합니다.
@@ -86,10 +98,14 @@ class BPETokenizer:
         - 새 token ID를 만들고, 시퀀스의 해당 pair를 새 ID로 치환합니다.
         - `self.merges`, `self.id_to_token`, `self.token_to_id`를 갱신합니다.
         """
+        # TODO : 여기서 머지할 수 있는걸 다 머지한 다음에 학습 시작해야됨
+        before_merge_corpus_id =  [id + 4 for id in corpus.encode("utf-8")]
+        corpus_id = []
+        for merge_rule in self.merges:
+            corpus_id.append(self._apply_merge(before_merge_corpus_id, merge_rule, self.token_to_id[merge_rule]))
+        
 
-        corpus_id =  [id + 4 for id in corpus.encode("utf-8")]
-
-        while (len(self.id_to_token) < self.vocab_size and len(corpus_id) > 1): #  len(corpus_id) > 1???
+        while (len(self.id_to_token) < self.vocab_size and len(corpus_id) > 1): 
             frequency = {}
 
             for i in range(len(corpus_id) - 1):
@@ -104,7 +120,7 @@ class BPETokenizer:
             while (i < len(corpus_id) - 1):
                 if ((corpus_id[i], corpus_id[i+1]) == best_pair):
                     corpus_id[i] = len(self.id_to_token)
-                    del corpus_id[i + 1]
+                    del corpus_id[i + 1] # del 할라면 지우고 뒤에 있는 애들을 다 앞으로 앞당겨야하므로 N**2 임 따라서 그냥 배열을 새로 만드는게 나음 그럼 N 
                 i += 1
 
             id = len(self.id_to_token)
@@ -128,7 +144,6 @@ class BPETokenizer:
                 "type" : "tuple",
                 "value" : list(tup)
             })
-        
             
         data["merges"] = merges_data
         with open(path, "w", encoding="utf-8") as f:
