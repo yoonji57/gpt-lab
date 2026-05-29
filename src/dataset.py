@@ -4,6 +4,7 @@
 import torch
 from torch.utils.data import DataLoader, Dataset
 import math
+import tiktoken
 
 
 class GPTDataset(Dataset):
@@ -26,7 +27,8 @@ class GPTDataset(Dataset):
         self.stride = stride if stride is not None else context_length
         # TODO: 만들 수 있는 학습 샘플 개수를 self._length에 저장하세요.
         # token_ids를 stride 칸 씩 이동하면서 context_length 개씩 묶어
-        self.length = math.ceil((len(self.token_ids) - self.context_length + 1) / self.stride)
+        # self.length = math.ceil((len(self.token_ids) - self.context_length + 1) / self.stride)
+        self.length = max((len(self.token_ids) - self.context_length - 1) // self.stride + 1, 0) # 왜이거야 -> 음수? 
 
     def __len__(self) -> int:
         """TODO: 전체 샘플 개수를 반환합니다."""
@@ -69,10 +71,10 @@ def create_dataloader(
     # num_workers 가 뭐냐 -> 전처리에 사용할 CPU 프로세서 개수 
 
     # 토크나이저를 초기화합니다.
-    tokenizer = token_ids.get_encoding("gpt2")
+    tokenizer = tiktoken.get_encoding("gpt2")
 
     # 데이터셋을 만듭니다.
-    dataset = GPTDataset(token_ids, tokenizer, context_length, stride)
+    dataset = GPTDataset(token_ids, context_length, stride)
 
     # 데이터 로더를 만듭니다.
     dataloader = DataLoader(
