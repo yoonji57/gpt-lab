@@ -11,8 +11,6 @@ from pathlib import Path
 import re
 import json
 
-
-
 PAD_TOKEN = "<pad>"
 UNK_TOKEN = "<unk>"
 BOS_TOKEN = "<bos>"
@@ -76,6 +74,7 @@ class BPETokenizer:
         """문장 끝 토큰 ID."""
         return SPECIAL_IDS[EOS_TOKEN]
 
+    
     def _apply_merge(self, token_ids: list[int], merge_rule: tuple[int, int], merge_id: int) -> list[int]:
         merged = []
         i = 0
@@ -98,8 +97,8 @@ class BPETokenizer:
         - 새 token ID를 만들고, 시퀀스의 해당 pair를 새 ID로 치환합니다.
         - `self.merges`, `self.id_to_token`, `self.token_to_id`를 갱신합니다.
         """
-        # TODO : 여기서 머지할 수 있는걸 다 머지한 다음에 학습 시작해야됨
-        before_merge_corpus_id =  [id + 4 for id in corpus.encode("utf-8")]
+        # 여기서 머지할 수 있는걸 다 머지한 다음에 학습 시작해야됨 -> 원래는 그냥 token id로 바꾸기만 하고 들어갔는데 그럼 매번 train 할 때마다 다시 넣고 있는 셈임 
+        before_merge_corpus_id =  [id + 4 for id in corpus.encode("utf-8")] # corpus.encode("utf-8") 를 통해 텍스트인 corpus를 바이트로 바꾸고, 이를 for문을 돌며 id로 바꿈 
         corpus_id = []
         for merge_rule in self.merges:
             corpus_id.append(self._apply_merge(before_merge_corpus_id, merge_rule, self.token_to_id[merge_rule]))

@@ -86,4 +86,7 @@ class MultiHeadAttention(nn.Module):
         context_vec = context_vec.contiguous().view(b, num_tokens, self.d_model)
         context_vec = self.out_proj(context_vec) # 투영
 
-        return context_vec, attn_weights    
+        if return_attention_weights:
+            return context_vec, attn_weights   
+        else:
+            return context_vec
